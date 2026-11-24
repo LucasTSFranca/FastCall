@@ -21,13 +21,13 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        @if(!auth()->user()->company_id)
+                        @if(!auth()->user()->empresa_id)
                             <th>Empresa</th>
                         @endif
                         <th>Identificador</th>
                         <th>Nome de exibição</th>
                         <th>Etiqueta NFC</th>
-                        <th>Status</th>
+                        <th>Situação</th>
                         <th>Chamados Ativos</th>
                         <th>Ações</th>
                     </tr>
@@ -35,28 +35,28 @@
                 <tbody>
                     @foreach($tables as $table)
                     <tr>
-                        @if(!auth()->user()->company_id)
+                        @if(!auth()->user()->empresa_id)
                         <td style="color:var(--accent);font-size:0.875rem;">
-                            {{ $table->company?->name ?? '—' }}
+                            {{ $table->company?->nome ?? '—' }}
                         </td>
                         @endif
                         <td>
-                            <strong>{{ $table->identifier }}</strong>
+                            <strong>{{ $table->identificador }}</strong>
                         </td>
                         <td style="color:var(--text-secondary);">
-                            {{ $table->label ?? '—' }}
+                            {{ $table->nome_exibicao ?? '—' }}
                         </td>
                         <td style="font-size:0.78rem;color:var(--text-muted);font-family:monospace;">
-                            {{ $table->nfc_tag_id ?? '—' }}
+                            {{ $table->identificador_etiqueta_nfc ?? '—' }}
                         </td>
                         <td>
                             <form method="POST" action="{{ route('tables.toggle', $table) }}" style="display:inline;">
                                 @csrf
                                 <button type="submit"
-                                        class="status-badge {{ $table->is_active ? 'status-done' : 'status-cancelled' }}"
+                                        class="status-badge {{ $table->ativo ? 'status-concluido' : 'status-cancelado' }}"
                                         style="cursor:pointer;border:none;font:inherit;padding:0.25rem 0.6rem;"
-                                        title="Clique para {{ $table->is_active ? 'desativar' : 'ativar' }} esta mesa">
-                                    {{ $table->is_active ? '✅ Ativa' : '❌ Inativa' }}
+                                        title="Clique para {{ $table->ativo ? 'desativar' : 'ativar' }} esta mesa">
+                                    {{ $table->ativo ? '✅ Ativa' : '❌ Inativa' }}
                                 </button>
                             </form>
                         </td>

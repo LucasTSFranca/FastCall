@@ -18,24 +18,24 @@
                 @if(isset($user)) @method('PUT') @endif
 
                 <div class="form-group">
-                    <label class="form-label" for="company_id">Empresa vinculada</label>
-                    <select id="company_id" name="company_id" class="form-select">
+                    <label class="form-label" for="empresa_id">Empresa vinculada</label>
+                    <select id="empresa_id" name="empresa_id" class="form-select">
                         <option value="">— Nenhuma (administrador global) —</option>
                         @foreach($companies as $company)
                             <option value="{{ $company->id }}"
-                                {{ old('company_id', $user?->company_id) == $company->id ? 'selected' : '' }}>
-                                {{ $company->name }}
+                                {{ old('empresa_id', $user?->empresa_id) == $company->id ? 'selected' : '' }}>
+                                {{ $company->nome }}
                             </option>
                         @endforeach
                     </select>
-                    @error('company_id') <span class="form-error">{{ $message }}</span> @enderror
+                    @error('empresa_id') <span class="form-error">{{ $message }}</span> @enderror
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="name">Nome *</label>
-                    <input id="name" type="text" name="name" class="form-input" required
-                           value="{{ old('name', $user?->name) }}" placeholder="Nome completo">
-                    @error('name') <span class="form-error">{{ $message }}</span> @enderror
+                    <label class="form-label" for="nome">Nome *</label>
+                    <input id="nome" type="text" name="nome" class="form-input" required
+                           value="{{ old('nome', $user?->nome) }}" placeholder="Nome completo">
+                    @error('nome') <span class="form-error">{{ $message }}</span> @enderror
                 </div>
 
                 <div class="form-group">
@@ -63,20 +63,20 @@
                 @endif
 
                 <div class="form-group">
-                    <label class="form-label" for="role">Perfil *</label>
-                    <select id="role" name="role" class="form-select" required>
-                        <option value="attendant" {{ old('role', $user?->role) === 'attendant' ? 'selected' : '' }}>Atendente</option>
-                        <option value="manager"   {{ old('role', $user?->role) === 'manager'   ? 'selected' : '' }}>Gerente</option>
-                        <option value="admin"     {{ old('role', $user?->role) === 'admin'     ? 'selected' : '' }}>Administrador</option>
+                    <label class="form-label" for="perfil">Perfil *</label>
+                    <select id="perfil" name="perfil" class="form-select" required>
+                        <option value="atendente" {{ old('perfil', $user?->perfil) === 'atendente' ? 'selected' : '' }}>Atendente</option>
+                        <option value="gerente" {{ old('perfil', $user?->perfil) === 'gerente' ? 'selected' : '' }}>Gerente</option>
+                        <option value="administrador" {{ old('perfil', $user?->perfil) === 'administrador' ? 'selected' : '' }}>Administrador</option>
                     </select>
-                    @error('role') <span class="form-error">{{ $message }}</span> @enderror
+                    @error('perfil') <span class="form-error">{{ $message }}</span> @enderror
                 </div>
 
                 <div class="form-group">
                     <label class="form-toggle">
-                        <input type="hidden" name="is_active" value="0">
-                        <input type="checkbox" name="is_active" value="1"
-                               {{ (bool) old('is_active', $user ? $user->is_active : true) ? 'checked' : '' }}
+                        <input type="hidden" name="ativo" value="0">
+                        <input type="checkbox" name="ativo" value="1"
+                               {{ (bool) old('ativo', $user ? $user->ativo : true) ? 'checked' : '' }}
                                {{ isset($user) && $user->id === auth()->id() ? 'disabled' : '' }}>
                         <span class="form-label" style="margin:0;">
                             Usuário ativo

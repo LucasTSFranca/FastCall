@@ -12,7 +12,7 @@ class CompanyController extends Controller
 {
     public function index()
     {
-        $companies = Company::withCount('users')->orderBy('name')->paginate(15);
+        $companies = Company::withCount('users')->orderBy('nome')->paginate(15);
 
         return view('admin.companies.index', compact('companies'));
     }
@@ -25,14 +25,14 @@ class CompanyController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name' => 'required|string|max:150',
+            'nome' => 'required|string|max:150',
             'cnpj' => 'nullable|string|max:18',
-            'theme' => ['required', Rule::in(array_keys(config('themes')))],
-            'is_active' => 'boolean',
+            'tema' => ['required', Rule::in(array_keys(config('themes')))],
+            'ativo' => 'boolean',
         ]);
 
-        $data['slug'] = Str::slug($data['name']);
-        $data['is_active'] = $request->boolean('is_active');
+        $data['identificador'] = Str::slug($data['nome']);
+        $data['ativo'] = $request->boolean('ativo');
 
         Company::create($data);
 
@@ -47,14 +47,14 @@ class CompanyController extends Controller
     public function update(Request $request, Company $company)
     {
         $data = $request->validate([
-            'name' => 'required|string|max:150',
+            'nome' => 'required|string|max:150',
             'cnpj' => 'nullable|string|max:18',
-            'theme' => ['required', Rule::in(array_keys(config('themes')))],
-            'is_active' => 'boolean',
+            'tema' => ['required', Rule::in(array_keys(config('themes')))],
+            'ativo' => 'boolean',
         ]);
 
-        $data['slug'] = Str::slug($data['name']);
-        $data['is_active'] = $request->boolean('is_active');
+        $data['identificador'] = Str::slug($data['nome']);
+        $data['ativo'] = $request->boolean('ativo');
 
         $company->update($data);
 
@@ -63,10 +63,10 @@ class CompanyController extends Controller
 
     public function toggle(Company $company)
     {
-        $company->update(['is_active' => ! $company->is_active]);
-        $status = $company->is_active ? 'ativada' : 'desativada';
+        $company->update(['ativo' => ! $company->ativo]);
+        $status = $company->ativo ? 'ativada' : 'desativada';
 
-        return back()->with('success', "Empresa {$company->name} {$status} com sucesso!");
+        return back()->with('success', "Empresa {$company->nome} {$status} com sucesso!");
     }
 
     public function destroy(Company $company)

@@ -8,26 +8,26 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('tables', function (Blueprint $table) {
+        Schema::create('mesas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('company_id')
-                  ->constrained('companies')
-                  ->cascadeOnDelete();
-            $table->string('identifier', 20);
-            $table->string('label', 100)->nullable();
-            $table->string('qr_token', 80)->unique();
-            $table->string('nfc_tag_id', 100)->nullable()->index();
-            $table->boolean('is_active')->default(true);
+            $table->foreignId('empresa_id')
+                ->constrained('empresas')
+                ->cascadeOnDelete();
+            $table->string('identificador', 20);
+            $table->string('nome_exibicao', 100)->nullable();
+            $table->string('token_qr', 80)->unique();
+            $table->string('identificador_etiqueta_nfc', 100)->nullable()->index();
+            $table->boolean('ativo')->default(true);
             $table->softDeletes();
             $table->timestamps();
 
-            $table->unique(['company_id', 'identifier']);
-            $table->index(['company_id', 'is_active']);
+            $table->unique(['empresa_id', 'identificador']);
+            $table->index(['empresa_id', 'ativo']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('tables');
+        Schema::dropIfExists('mesas');
     }
 };

@@ -18,10 +18,10 @@
                 @if(isset($company)) @method('PUT') @endif
 
                 <div class="form-group">
-                    <label class="form-label" for="name">Nome da Empresa *</label>
-                    <input id="name" type="text" name="name" class="form-input" required
-                           value="{{ old('name', $company?->name) }}" placeholder="Restaurante Exemplo">
-                    @error('name') <span class="form-error">{{ $message }}</span> @enderror
+                    <label class="form-label" for="nome">Nome da Empresa *</label>
+                    <input id="nome" type="text" name="nome" class="form-input" required
+                           value="{{ old('nome', $company?->nome) }}" placeholder="Restaurante Exemplo">
+                    @error('nome') <span class="form-error">{{ $message }}</span> @enderror
                 </div>
 
                 <div class="form-group">
@@ -32,22 +32,22 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="theme">Tema padrão *</label>
-                    <select id="theme" name="theme" class="form-select" required>
+                    <label class="form-label" for="tema">Tema padrão *</label>
+                    <select id="tema" name="tema" class="form-select" required>
                         @foreach(config('themes') as $themeKey => $theme)
-                            <option value="{{ $themeKey }}" {{ old('theme', $company?->theme) === $themeKey ? 'selected' : '' }}>
+                            <option value="{{ $themeKey }}" {{ old('tema', $company?->tema) === $themeKey ? 'selected' : '' }}>
                                 {{ $theme['name'] }} — {{ $theme['harmony'] }}
                             </option>
                         @endforeach
                     </select>
-                    @error('theme') <span class="form-error">{{ $message }}</span> @enderror
+                    @error('tema') <span class="form-error">{{ $message }}</span> @enderror
                 </div>
 
                 <div class="form-group">
                     <label class="form-toggle">
-                        <input type="hidden" name="is_active" value="0">
-                        <input type="checkbox" name="is_active" value="1"
-                               {{ (bool) old('is_active', $company ? $company->is_active : true) ? 'checked' : '' }}>
+                        <input type="hidden" name="ativo" value="0">
+                        <input type="checkbox" name="ativo" value="1"
+                               {{ (bool) old('ativo', $company ? $company->ativo : true) ? 'checked' : '' }}>
                         <span class="form-label" style="margin:0;">Empresa ativa</span>
                     </label>
                     <small style="color:var(--text-muted);font-size:0.78rem;margin-top:0.25rem;">

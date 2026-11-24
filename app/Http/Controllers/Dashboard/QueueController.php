@@ -11,7 +11,7 @@ class QueueController extends Controller
 {
     private function companyId(): ?int
     {
-        return auth()->user()->company_id;
+        return auth()->user()->empresa_id;
     }
 
     /** Painel da fila — a lista é atualizada pelo componente Livewire. */
@@ -24,27 +24,35 @@ class QueueController extends Controller
     public function live(): JsonResponse
     {
         $query = QueueCall::active()
-            ->with('table:id,identifier,label')
-            ->orderBy('position');
+            ->with('table:id,identificador,nome_exibicao')
+            ->orderBy('posicao');
 
         if ($this->companyId()) {
             $query->forCompany($this->companyId());
         }
 
-        $calls = $query->get(['id', 'table_id', 'company_id', 'position', 'status', 'called_at']);
+        $calls = $query->get([
+            'id',
+            'mesa_id',
+            'empresa_id',
+            'posicao',
+            'tipo_servico',
+            'situacao',
+            'chamado_em',
+        ]);
 
         return response()->json($calls);
     }
 
-    /** Atendente assume o chamado (muda status para in_progress) */
+    /** Atendente assume o chamado e altera sua situação para em atendimento. */
     public function attend(QueueCall $call)
     {
         $this->authorizeForCompany($call);
 
         $call->update([
-            'status' => 'in_progress',
-            'attended_by' => auth()->id(),
-            'attended_at' => now(),
+            'situacao' => 'em_atendimento',
+            'atendente_id' => auth()->id(),
+            'atendimento_iniciado_em' => now(),
         ]);
 
         $mesa = $call->table->display_name;
@@ -58,8 +66,8 @@ class QueueController extends Controller
         $this->authorizeForCompany($call);
 
         $call->update([
-            'status' => 'done',
-            'closed_at' => now(),
+            'situacao' => 'concluido',
+            'encerrado_em' => now(),
         ]);
 
         return back()->with('success', 'Chamado encerrado com sucesso.');
@@ -69,20 +77,20 @@ class QueueController extends Controller
     public function closeBatch(Request $request)
     {
         $validated = $request->validate([
-            'call_ids' => 'required|array|min:1',
-            'call_ids.*' => 'integer|exists:queue_calls,id',
+            'chamado_ids' => 'required|array|min:1',
+            'chamado_ids.*' => 'integer|exists:chamados,id',
         ]);
 
-        $query = QueueCall::whereIn('id', $validated['call_ids'])->active();
+        $query = QueueCall::whereIn('id', $validated['chamado_ids'])->active();
 
         if ($this->companyId()) {
-            $query->where('company_id', $this->companyId());
+            $query->where('empresa_id', $this->companyId());
         }
 
         $count = $query->update([
-            'status' => 'done',
-            'closed_at' => now(),
-            'attended_by' => auth()->id(),
+            'situacao' => 'concluido',
+            'encerrado_em' => now(),
+            'atendente_id' => auth()->id(),
         ]);
 
         return back()->with('success', "✅ {$count} chamado(s) encerrado(s) com sucesso.");
@@ -104,13 +112,13 @@ class QueueController extends Controller
         $query = QueueCall::active();
 
         if ($this->companyId()) {
-            $query->where('company_id', $this->companyId());
+            $query->where('empresa_id', $this->companyId());
         }
 
         $count = $query->update([
-            'status' => 'done',
-            'closed_at' => now(),
-            'attended_by' => auth()->id(),
+            'situacao' => 'concluido',
+            'encerrado_em' => now(),
+            'atendente_id' => auth()->id(),
         ]);
 
         return back()->with('success', "🗑️ Fila limpa! {$count} chamado(s) encerrado(s).");
@@ -123,6 +131,6 @@ class QueueController extends Controller
             return;
         }
 
-        abort_if($call->company_id !== $this->companyId(), 403, 'Acesso não autorizado a este chamado.');
+        abort_if($call->empresa_id !== $this->companyId(), 403, 'Acesso não autorizado a este chamado.');
     }
 }

@@ -8,13 +8,13 @@ use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Garante que apenas usuários com is_active = true podem acessar áreas autenticadas.
+ * Garante que apenas contas ativas podem acessar áreas autenticadas.
  */
 class EnsureUserIsActive
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::check() && ! Auth::user()->is_active) {
+        if (Auth::check() && ! Auth::user()->ativo) {
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();

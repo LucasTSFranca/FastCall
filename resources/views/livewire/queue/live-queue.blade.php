@@ -25,7 +25,8 @@
                             </th>
                             <th style="width:60px;">#</th>
                             <th>Mesa</th>
-                            <th>Status</th>
+                            <th>Serviço</th>
+                            <th>Situação</th>
                             <th>Aguardando há</th>
                             <th>Atendente</th>
                             <th style="width:200px;">Ações</th>
@@ -33,43 +34,44 @@
                     </thead>
                     <tbody id="queue-tbody">
                         @foreach($calls as $call)
-                            <tr class="queue-row" data-call-id="{{ $call->id }}" data-status="{{ $call->status }}" wire:key="queue-call-{{ $call->id }}">
+                            <tr class="queue-row" data-call-id="{{ $call->id }}" data-status="{{ $call->situacao }}" wire:key="queue-call-{{ $call->id }}">
                                 <td>
                                     <input
                                         type="checkbox"
-                                        name="call_ids[]"
+                                        name="chamado_ids[]"
                                         form="batch-form"
                                         value="{{ $call->id }}"
                                         class="row-checkbox"
                                     >
                                 </td>
                                 <td>
-                                    <span class="badge-count">{{ $call->position }}</span>
+                                    <span class="badge-count">{{ $call->posicao }}</span>
                                 </td>
                                 <td>
                                     <strong style="color:var(--text-primary);">
                                         {{ $call->table->display_name }}
                                     </strong>
-                                    @if(!auth()->user()->company_id && $call->company)
+                                    @if(!auth()->user()->empresa_id && $call->company)
                                         <span style="display:inline-block;margin-left:0.35rem;padding:0.15rem 0.5rem;border-radius:var(--radius-sm);background:var(--bg-secondary);font-size:0.75rem;color:var(--accent);">
-                                            {{ $call->company->name }}
+                                            {{ $call->company->nome }}
                                         </span>
                                     @endif
-                                    @if($call->table->identifier !== $call->table->label)
+                                    @if($call->table->identificador !== $call->table->nome_exibicao)
                                         <br>
-                                        <small style="color:var(--text-muted);">ID: {{ $call->table->identifier }}</small>
+                                        <small style="color:var(--text-muted);">Identificador: {{ $call->table->identificador }}</small>
                                     @endif
                                 </td>
+                                <td>{{ \App\Models\QueueCall::SERVICE_TYPES[$call->tipo_servico] ?? $call->tipo_servico }}</td>
                                 <td>
-                                    <span class="status-badge status-{{ $call->status }}">
-                                        {{ __('ui.queue_status.' . $call->status) }}
+                                    <span class="status-badge status-{{ $call->situacao }}">
+                                        {{ __('ui.queue_status.' . $call->situacao) }}
                                     </span>
                                 </td>
                                 <td style="color:var(--text-muted);font-size:0.85rem;">
-                                    {{ $call->called_at->diffForHumans() }}
+                                    {{ $call->chamado_em->diffForHumans() }}
                                 </td>
                                 <td style="color:var(--text-secondary);font-size:0.875rem;">
-                                    {{ $call->attendant?->name ?? '—' }}
+                                    {{ $call->attendant?->nome ?? '—' }}
                                 </td>
                                 <td>
                                     <div class="actions-cell">

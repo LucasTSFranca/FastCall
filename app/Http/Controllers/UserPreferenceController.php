@@ -11,11 +11,11 @@ class UserPreferenceController extends Controller
     public function updateTheme(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'theme' => ['required', Rule::in(array_keys(config('themes')))],
+            'tema' => ['required', Rule::in(array_keys(config('themes')))],
         ]);
 
         $request->user()->update([
-            'theme_preference' => $validated['theme'],
+            'tema_preferido' => $validated['tema'],
         ]);
 
         return response()->json(['ok' => true]);

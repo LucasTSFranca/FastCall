@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\Company;
 use App\Models\RestaurantTable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -12,19 +13,19 @@ class TableController extends Controller
 {
     private function companyId(): ?int
     {
-        return auth()->user()->company_id;
+        return auth()->user()->empresa_id;
     }
 
     public function index()
     {
         $query = RestaurantTable::with('company')
-                                 ->withCount([
-                                     'queueCalls as active_calls_count' => fn ($q) => $q->active(),
-                                 ])
-                                 ->orderBy('identifier');
+            ->withCount([
+                'queueCalls as active_calls_count' => fn ($q) => $q->active(),
+            ])
+            ->orderBy('identificador');
 
         if ($this->companyId()) {
-            $query->where('company_id', $this->companyId());
+            $query->where('empresa_id', $this->companyId());
         }
 
         $tables = $query->paginate(20);
@@ -36,7 +37,7 @@ class TableController extends Controller
     {
         $companies = $this->companyId()
             ? null
-            : \App\Models\Company::where('is_active', true)->orderBy('name')->get();
+            : Company::where('ativo', true)->orderBy('nome')->get();
 
         return view('dashboard.tables.form', ['table' => null, 'companies' => $companies]);
     }
@@ -44,22 +45,22 @@ class TableController extends Controller
     public function store(Request $request)
     {
         $rules = [
-            'identifier' => 'required|string|max:20',
-            'label'      => 'nullable|string|max:100',
-            'nfc_tag_id' => 'nullable|string|max:100',
-            'is_active'  => 'boolean',
+            'identificador' => 'required|string|max:20',
+            'nome_exibicao' => 'nullable|string|max:100',
+            'identificador_etiqueta_nfc' => 'nullable|string|max:100',
+            'ativo' => 'boolean',
         ];
 
         if (! $this->companyId()) {
-            $rules['company_id'] = 'required|exists:companies,id';
+            $rules['empresa_id'] = 'required|exists:empresas,id';
         }
 
         $data = $request->validate($rules);
 
-        $companyId          = $this->companyId() ?? (int) $data['company_id'];
-        $data['company_id'] = $companyId;
-        $data['qr_token']   = Str::random(40) . $companyId;
-        $data['is_active']  = $request->boolean('is_active');
+        $companyId = $this->companyId() ?? (int) $data['empresa_id'];
+        $data['empresa_id'] = $companyId;
+        $data['token_qr'] = Str::random(40).$companyId;
+        $data['ativo'] = $request->boolean('ativo');
 
         RestaurantTable::create($data);
 
@@ -72,7 +73,7 @@ class TableController extends Controller
 
         $companies = $this->companyId()
             ? null
-            : \App\Models\Company::where('is_active', true)->orderBy('name')->get();
+            : Company::where('ativo', true)->orderBy('nome')->get();
 
         return view('dashboard.tables.form', compact('table', 'companies'));
     }
@@ -82,25 +83,25 @@ class TableController extends Controller
         $this->authorizeForTable($table);
 
         $rules = [
-            'identifier' => 'required|string|max:20',
-            'label'      => 'nullable|string|max:100',
-            'nfc_tag_id' => 'nullable|string|max:100',
-            'is_active'  => 'boolean',
+            'identificador' => 'required|string|max:20',
+            'nome_exibicao' => 'nullable|string|max:100',
+            'identificador_etiqueta_nfc' => 'nullable|string|max:100',
+            'ativo' => 'boolean',
         ];
 
         if (! $this->companyId()) {
-            $rules['company_id'] = $table->company_id ? 'nullable|exists:companies,id' : 'required|exists:companies,id';
+            $rules['empresa_id'] = $table->empresa_id ? 'nullable|exists:empresas,id' : 'required|exists:empresas,id';
         }
 
         $data = $request->validate($rules);
 
-        if (! $this->companyId() && ! empty($data['company_id'])) {
-            $data['company_id'] = (int) $data['company_id'];
+        if (! $this->companyId() && ! empty($data['empresa_id'])) {
+            $data['empresa_id'] = (int) $data['empresa_id'];
         } else {
-            unset($data['company_id']);
+            unset($data['empresa_id']);
         }
 
-        $data['is_active'] = $request->boolean('is_active');
+        $data['ativo'] = $request->boolean('ativo');
 
         $table->update($data);
 
@@ -111,10 +112,10 @@ class TableController extends Controller
     {
         $this->authorizeForTable($table);
 
-        $table->update(['is_active' => ! $table->is_active]);
-        $status = $table->is_active ? 'ativada' : 'desativada';
+        $table->update(['ativo' => ! $table->ativo]);
+        $status = $table->ativo ? 'ativada' : 'desativada';
 
-        return back()->with('success', "Mesa {$table->identifier} {$status} com sucesso!");
+        return back()->with('success', "Mesa {$table->identificador} {$status} com sucesso!");
     }
 
     public function destroy(RestaurantTable $table)
@@ -131,7 +132,7 @@ class TableController extends Controller
     {
         $this->authorizeForTable($table);
 
-        $url    = route('client.call.show', $table->qr_token);
+        $url = route('client.call.show', $table->token_qr);
         $qrCode = QrCode::format('svg')->size(300)->errorCorrection('H')->generate($url);
 
         return view('dashboard.tables.qr', compact('table', 'qrCode', 'url'));
@@ -143,6 +144,6 @@ class TableController extends Controller
             return;
         }
 
-        abort_if($table->company_id !== $this->companyId(), 403);
+        abort_if($table->empresa_id !== $this->companyId(), 403);
     }
 }

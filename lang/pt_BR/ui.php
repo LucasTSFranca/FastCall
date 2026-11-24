@@ -2,20 +2,14 @@
 
 return [
     'roles' => [
-        'admin' => 'Administrador',
-        'manager' => 'Gerente',
-        'attendant' => 'Atendente',
+        'administrador' => 'Administrador',
+        'gerente' => 'Gerente',
+        'atendente' => 'Atendente',
     ],
     'queue_status' => [
-        'waiting' => 'Aguardando',
-        'in_progress' => 'Em atendimento',
-        'done' => 'Concluído',
-        'cancelled' => 'Cancelado',
-    ],
-    'pagination' => [
-        'showing' => 'Exibindo',
-        'to' => 'a',
-        'of' => 'de',
-        'results' => 'resultados',
+        'aguardando' => 'Aguardando',
+        'em_atendimento' => 'Em atendimento',
+        'concluido' => 'Concluído',
+        'cancelado' => 'Cancelado',
     ],
 ];

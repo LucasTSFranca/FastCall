@@ -48,7 +48,7 @@
                     <tr>
                         <th>#</th>
                         <th>Mesa</th>
-                        <th>Status</th>
+                        <th>Situação</th>
                         <th>Aguardando</th>
                         <th></th>
                     </tr>
@@ -57,18 +57,18 @@
                     @foreach($recentCalls as $call)
                     <tr>
                         <td>
-                            <span class="badge-count">{{ $call->position }}</span>
+                            <span class="badge-count">{{ $call->posicao }}</span>
                         </td>
                         <td>
                             <strong>{{ $call->table->display_name }}</strong>
                         </td>
                         <td>
-                            <span class="status-badge status-{{ $call->status }}">
-                                {{ __('ui.queue_status.' . $call->status) }}
+                            <span class="status-badge status-{{ $call->situacao }}">
+                                {{ __('ui.queue_status.' . $call->situacao) }}
                             </span>
                         </td>
                         <td style="color:var(--text-muted);font-size:0.85rem;">
-                            {{ $call->called_at->diffForHumans() }}
+                            {{ $call->chamado_em->diffForHumans() }}
                         </td>
                         <td>
                             <a href="{{ route('queue.index') }}" class="btn btn-ghost btn-sm">

@@ -11,31 +11,31 @@ class DashboardController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $companyId = $user->company_id;
+        $companyId = $user->empresa_id;
 
         if ($companyId) {
-            $waitingCount    = QueueCall::forCompany($companyId)->waiting()->count();
-            $inProgressCount = QueueCall::forCompany($companyId)->where('status', 'in_progress')->count();
-            $totalToday      = QueueCall::forCompany($companyId)->whereDate('called_at', today())->count();
-            $tablesCount     = RestaurantTable::where('company_id', $companyId)->where('is_active', true)->count();
+            $waitingCount = QueueCall::forCompany($companyId)->waiting()->count();
+            $inProgressCount = QueueCall::forCompany($companyId)->where('situacao', 'em_atendimento')->count();
+            $totalToday = QueueCall::forCompany($companyId)->whereDate('chamado_em', today())->count();
+            $tablesCount = RestaurantTable::where('empresa_id', $companyId)->where('ativo', true)->count();
 
             $recentCalls = QueueCall::forCompany($companyId)
-                                    ->active()
-                                    ->with('table')
-                                    ->orderBy('position')
-                                    ->take(10)
-                                    ->get();
+                ->active()
+                ->with('table')
+                ->orderBy('posicao')
+                ->take(10)
+                ->get();
         } else {
-            $waitingCount    = QueueCall::waiting()->count();
-            $inProgressCount = QueueCall::where('status', 'in_progress')->count();
-            $totalToday      = QueueCall::whereDate('called_at', today())->count();
-            $tablesCount     = RestaurantTable::where('is_active', true)->count();
+            $waitingCount = QueueCall::waiting()->count();
+            $inProgressCount = QueueCall::where('situacao', 'em_atendimento')->count();
+            $totalToday = QueueCall::whereDate('chamado_em', today())->count();
+            $tablesCount = RestaurantTable::where('ativo', true)->count();
 
             $recentCalls = QueueCall::active()
-                                    ->with(['table', 'company'])
-                                    ->orderBy('position')
-                                    ->take(10)
-                                    ->get();
+                ->with(['table', 'company'])
+                ->orderBy('posicao')
+                ->take(10)
+                ->get();
         }
 
         return view('dashboard.index', compact(

@@ -8,35 +8,36 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('queue_calls', function (Blueprint $table) {
+        Schema::create('chamados', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('company_id')
-                  ->constrained('companies')
-                  ->cascadeOnDelete();
-            $table->foreignId('table_id')
-                  ->constrained('tables')
-                  ->cascadeOnDelete();
-            $table->foreignId('attended_by')
-                  ->nullable()
-                  ->constrained('users')
-                  ->nullOnDelete();
-            $table->unsignedInteger('position');
-            $table->enum('status', ['waiting', 'in_progress', 'done', 'cancelled'])->default('waiting');
-            $table->text('notes')->nullable();
-            $table->timestamp('called_at');
-            $table->timestamp('attended_at')->nullable();
-            $table->timestamp('closed_at')->nullable();
+            $table->foreignId('empresa_id')
+                ->constrained('empresas')
+                ->cascadeOnDelete();
+            $table->foreignId('mesa_id')
+                ->constrained('mesas')
+                ->cascadeOnDelete();
+            $table->foreignId('atendente_id')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+            $table->unsignedInteger('posicao');
+            $table->enum('tipo_servico', ['atendimento', 'pedir_conta'])->default('atendimento');
+            $table->enum('situacao', ['aguardando', 'em_atendimento', 'concluido', 'cancelado'])->default('aguardando');
+            $table->text('observacoes')->nullable();
+            $table->timestamp('chamado_em');
+            $table->timestamp('atendimento_iniciado_em')->nullable();
+            $table->timestamp('encerrado_em')->nullable();
             $table->timestamps();
 
-            $table->index(['company_id', 'status']);
-            $table->index(['company_id', 'status', 'position']);
-            $table->index('table_id');
-            $table->index('attended_by');
+            $table->index(['empresa_id', 'situacao']);
+            $table->index(['empresa_id', 'situacao', 'posicao']);
+            $table->index('mesa_id');
+            $table->index('atendente_id');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('queue_calls');
+        Schema::dropIfExists('chamados');
     }
 };

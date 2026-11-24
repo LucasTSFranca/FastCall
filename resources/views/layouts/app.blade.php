@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="{{ auth()->user()?->active_theme ?? 'dark' }}" data-theme-update-url="{{ route('theme.update') }}">
+<html lang="pt-BR" data-theme="{{ auth()->user()?->active_theme ?? 'safira' }}" data-theme-update-url="{{ route('theme.update') }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,6 +25,10 @@
             <a href="{{ route('queue.index') }}"
                class="nav-link {{ request()->routeIs('queue.*') ? 'active' : '' }}">
                 📋 Fila
+            </a>
+            <a href="{{ route('reports.index') }}"
+               class="nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">
+                📊 Relatórios
             </a>
             @if(auth()->user()->canManageTables())
             <a href="{{ route('tables.index') }}"
@@ -66,8 +70,8 @@
         <span id="theme-status" class="theme-status" role="status" aria-live="polite"></span>
 
         <div class="user-badge">
-            {{ auth()->user()->name }}
-            <span class="role-pill">{{ __('ui.roles.' . auth()->user()->role) }}</span>
+            {{ auth()->user()->nome }}
+            <span class="role-pill">{{ __('ui.roles.' . auth()->user()->perfil) }}</span>
         </div>
 
         <form method="POST" action="{{ route('logout') }}">

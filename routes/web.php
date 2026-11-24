@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Client\ClientCallController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Dashboard\QueueController;
+use App\Http\Controllers\Dashboard\ReportController;
 use App\Http\Controllers\Dashboard\TableController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserPreferenceController;
@@ -39,8 +40,11 @@ Route::middleware(['auth', 'ensure.active'])->group(function () {
     Route::post('/theme', [UserPreferenceController::class, 'updateTheme'])
         ->name('theme.update');
 
+    Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+
     // ── Gerenciamento de Mesas (Gerente e Admin) ─────────────────────────────
-    Route::middleware('role:manager,admin')->group(function () {
+    Route::middleware('role:gerente,administrador')->group(function () {
         Route::get('/tables', [TableController::class, 'index'])->name('tables.index');
         Route::get('/tables/create', [TableController::class, 'create'])->name('tables.create');
         Route::post('/tables', [TableController::class, 'store'])->name('tables.store');
@@ -63,7 +67,7 @@ Route::middleware(['auth', 'ensure.active'])->group(function () {
 });
 
 // ── Área Admin ────────────────────────────────────────────────────────────────
-Route::middleware(['auth', 'ensure.active', 'role:admin'])
+Route::middleware(['auth', 'ensure.active', 'role:administrador'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {

@@ -24,11 +24,11 @@ themeButtons.forEach((button) => {
                     'Accept': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                 },
-                body: JSON.stringify({ theme: nextTheme }),
+                body: JSON.stringify({ tema: nextTheme }),
             });
 
             if (!response.ok) {
-                throw new Error(`Theme update failed with status ${response.status}`);
+                throw new Error(`A atualização do tema falhou com o código ${response.status}.`);
             }
 
             themeStatus.textContent = 'Aparência atualizada.';
@@ -42,7 +42,7 @@ themeButtons.forEach((button) => {
             });
             themeStatus.textContent = 'Não foi possível salvar a aparência. Tente novamente.';
             themeStatus.dataset.state = 'error';
-            console.error('Theme preference could not be saved.', error);
+            console.error('Não foi possível salvar a preferência de tema.', error);
         }
     });
 });

@@ -7,11 +7,11 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Protege rotas por papel (role).
+ * Protege rotas por perfil.
  *
  * Uso nas rotas:
- *   ->middleware('role:admin')
- *   ->middleware('role:manager,admin')
+ *   ->middleware('role:administrador')
+ *   ->middleware('role:gerente,administrador')
  */
 class CheckRole
 {
@@ -19,7 +19,7 @@ class CheckRole
     {
         $user = $request->user();
 
-        if (! $user || ! in_array($user->role, $roles)) {
+        if (! $user || ! in_array($user->perfil, $roles)) {
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Acesso não autorizado.'], 403);
             }

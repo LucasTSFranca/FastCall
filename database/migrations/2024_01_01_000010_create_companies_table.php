@@ -8,23 +8,23 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('companies', function (Blueprint $table) {
+        Schema::create('empresas', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('slug')->unique();
-            $table->string('logo_path')->nullable();
+            $table->string('nome');
+            $table->string('identificador')->unique();
+            $table->string('caminho_logo')->nullable();
             $table->string('cnpj', 18)->nullable()->unique();
-            $table->enum('theme', ['dark', 'white', 'pink', 'blue', 'green', 'yellow'])->default('dark');
-            $table->boolean('is_active')->default(true);
+            $table->enum('tema', ['safira', 'azul_mineral', 'coral_petroleo', 'marinho_cobre', 'bosque', 'triade'])->default('safira');
+            $table->boolean('ativo')->default(true);
             $table->timestamps();
 
-            $table->index('slug');
-            $table->index('is_active');
+            $table->index('identificador');
+            $table->index('ativo');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('companies');
+        Schema::dropIfExists('empresas');
     }
 };

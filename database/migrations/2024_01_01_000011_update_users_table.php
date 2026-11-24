@@ -9,34 +9,34 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->foreignId('company_id')
-                  ->nullable()
-                  ->after('id')
-                  ->constrained('companies')
-                  ->nullOnDelete();
+            $table->foreignId('empresa_id')
+                ->nullable()
+                ->after('id')
+                ->constrained('empresas')
+                ->nullOnDelete();
 
-            $table->enum('role', ['admin', 'manager', 'attendant'])
-                  ->default('attendant')
-                  ->after('email');
+            $table->enum('perfil', ['administrador', 'gerente', 'atendente'])
+                ->default('atendente')
+                ->after('email');
 
-            $table->boolean('is_active')
-                  ->default(true)
-                  ->after('role');
+            $table->boolean('ativo')
+                ->default(true)
+                ->after('perfil');
 
-            $table->enum('theme_preference', ['dark', 'white', 'pink', 'blue', 'green', 'yellow'])
-                  ->default('dark')
-                  ->after('is_active');
+            $table->enum('tema_preferido', ['safira', 'azul_mineral', 'coral_petroleo', 'marinho_cobre', 'bosque', 'triade'])
+                ->default('safira')
+                ->after('ativo');
 
-            $table->index(['company_id', 'role']);
-            $table->index('is_active');
+            $table->index(['empresa_id', 'perfil']);
+            $table->index('ativo');
         });
     }
 
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropForeign(['company_id']);
-            $table->dropColumn(['company_id', 'role', 'is_active', 'theme_preference']);
+            $table->dropForeign(['empresa_id']);
+            $table->dropColumn(['empresa_id', 'perfil', 'ativo', 'tema_preferido']);
         });
     }
 };

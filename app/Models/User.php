@@ -4,10 +4,10 @@ namespace App\Models;
 
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
@@ -15,13 +15,13 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     protected $fillable = [
-        'company_id',
-        'name',
+        'empresa_id',
+        'nome',
         'email',
         'password',
-        'role',
-        'is_active',
-        'theme_preference',
+        'perfil',
+        'ativo',
+        'tema_preferido',
     ];
 
     protected $hidden = [
@@ -33,8 +33,8 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password'          => 'hashed',
-            'is_active'         => 'boolean',
+            'password' => 'hashed',
+            'ativo' => 'boolean',
         ];
     }
 
@@ -42,31 +42,42 @@ class User extends Authenticatable
 
     public function company(): BelongsTo
     {
-        return $this->belongsTo(Company::class);
+        return $this->belongsTo(Company::class, 'empresa_id');
     }
 
     public function attendedCalls(): HasMany
     {
-        return $this->hasMany(QueueCall::class, 'attended_by');
+        return $this->hasMany(QueueCall::class, 'atendente_id');
     }
 
     // ── Helpers de Role ─────────────────────────────────────────────────────
 
-    public function isAdmin(): bool     { return $this->role === 'admin'; }
-    public function isManager(): bool   { return $this->role === 'manager'; }
-    public function isAttendant(): bool { return $this->role === 'attendant'; }
+    public function isAdmin(): bool
+    {
+        return $this->perfil === 'administrador';
+    }
+
+    public function isManager(): bool
+    {
+        return $this->perfil === 'gerente';
+    }
+
+    public function isAttendant(): bool
+    {
+        return $this->perfil === 'atendente';
+    }
 
     /** Gerentes e Admins podem cadastrar/editar/remover mesas e atendentes */
     public function canManageTables(): bool
     {
-        return in_array($this->role, ['admin', 'manager']);
+        return in_array($this->perfil, ['administrador', 'gerente']);
     }
 
-    /** Tema ativo: prefere a escolha do usuário, cai no tema da empresa, depois 'dark' */
+    /** Tema ativo: prefere a escolha do usuário, cai no tema da empresa e, por fim, no padrão. */
     public function getActiveThemeAttribute(): string
     {
-        return $this->theme_preference
-            ?? $this->company?->theme
-            ?? 'dark';
+        return $this->tema_preferido
+            ?? $this->company?->tema
+            ?? 'safira';
     }
 }

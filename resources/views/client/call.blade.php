@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="{{ $table->company->theme ?? 'dark' }}">
+<html lang="pt-BR" data-theme="{{ $table->company->tema ?? 'safira' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="theme-color" content="{{ config('themes')[$table->company->theme]['swatch'] ?? '#315b83' }}">
+    <meta name="theme-color" content="{{ config('themes')[$table->company->tema ?? 'safira']['swatch'] ?? '#315b83' }}">
     <title>FastCall — {{ $table->display_name }}</title>
     @vite(['resources/css/app.css'])
 </head>
@@ -14,7 +14,7 @@
     <x-brand class="client-logo" />
 
     <div class="table-info">
-        <p class="table-label">{{ $table->company->name }}</p>
+        <p class="table-label">{{ $table->company->nome }}</p>
         <h1 class="table-number">{{ $table->display_name }}</h1>
     </div>
 
@@ -22,11 +22,16 @@
     <div id="state-idle" class="{{ $activeCall ? 'hidden' : '' }}" style="width:100%;">
         <div class="client-card">
             <p class="client-hint">
-                Toque no botão abaixo para chamar um atendente à sua mesa.
+                Escolha como podemos ajudar você.
             </p>
-            <button id="btn-call" class="btn-call-main" type="button">
-                🔔 Chamar Atendente
-            </button>
+            <div class="client-service-actions">
+                <button class="btn-call-main btn-service" data-service="atendimento" type="button">
+                    🔔 Chamar Atendente
+                </button>
+                <button class="btn-call-secondary btn-service" data-service="pedir_conta" type="button">
+                    🧾 Pedir a Conta
+                </button>
+            </div>
         </div>
     </div>
 
@@ -38,9 +43,12 @@
         style="width:100%;"
     >
         <div class="client-card queue-card">
+            <p class="queue-label" id="requested-service">
+                {{ $activeCall?->tipo_servico === 'pedir_conta' ? 'Pedido de conta' : 'Atendimento solicitado' }}
+            </p>
             <p class="queue-label">Sua posição na fila</p>
             <div class="queue-position" id="queue-position">
-                {{ $activeCall?->position ?? '—' }}
+                {{ $activeCall?->posicao ?? '—' }}
             </div>
             <p class="queue-subtitle" id="queue-subtitle" aria-live="polite">
                 Aguarde, um atendente virá até você em breve.
@@ -61,8 +69,10 @@
     <div id="state-progress" class="hidden" style="width:100%;">
         <div class="client-card progress-card">
             <div class="progress-icon">🙋</div>
-            <h2>Atendente a caminho!</h2>
-            <p>Um atendente está se dirigindo à sua mesa agora.</p>
+            <h2>{{ $activeCall?->tipo_servico === 'pedir_conta' ? 'Sua conta está a caminho!' : 'Atendente a caminho!' }}</h2>
+            <p id="progress-description">
+                {{ $activeCall?->tipo_servico === 'pedir_conta' ? 'Estamos preparando sua conta.' : 'Um atendente está se dirigindo à sua mesa agora.' }}
+            </p>
         </div>
     </div>
 
@@ -88,9 +98,10 @@
 </div>
 
 <script>
-const QR_TOKEN = '{{ $table->qr_token }}';
+const QR_TOKEN = '{{ $table->token_qr }}';
 const CSRF     = document.querySelector('meta[name="csrf-token"]').content;
 let   CALL_ID  = {{ $activeCall?->id ?? 'null' }};
+let   CALL_TYPE = @json($activeCall?->tipo_servico ?? 'atendimento');
 let   pollInterval = null;
 
 // ── Utilitário de troca de estado ────────────────────────────────────────
@@ -101,38 +112,49 @@ function showState(id) {
     document.getElementById(id).classList.remove('hidden');
 }
 
-// ── Chamar Atendente ─────────────────────────────────────────────────────
-document.getElementById('btn-call').addEventListener('click', async () => {
-    const btn = document.getElementById('btn-call');
-    btn.disabled = true;
-    btn.textContent = 'Enviando...';
+// ── Solicitar um serviço ──────────────────────────────────────────────────
+document.querySelectorAll('.btn-service').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+        const requestedType = btn.dataset.service;
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Enviando...';
 
-    try {
-        const res  = await fetch(`/call/${QR_TOKEN}`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': CSRF,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            },
-        });
+        try {
+            const res = await fetch(`/call/${QR_TOKEN}`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': CSRF,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ tipo_servico: requestedType }),
+            });
 
-        const data = await res.json();
+            const data = await res.json();
 
-        if (data.success) {
-            CALL_ID = data.call_id;
-            document.getElementById('queue-position').textContent = data.position;
-            showState('state-waiting');
-            startPolling();
-        } else {
-            throw new Error('O chamado não foi aceito.');
+            if (data.success) {
+                CALL_ID = data.call_id;
+                CALL_TYPE = data.tipo_servico;
+                document.getElementById('queue-position').textContent = data.position;
+                document.getElementById('requested-service').textContent =
+                    CALL_TYPE === 'pedir_conta' ? 'Pedido de conta' : 'Atendimento solicitado';
+                document.querySelector('#state-progress h2').textContent =
+                    CALL_TYPE === 'pedir_conta' ? 'Sua conta está a caminho!' : 'Atendente a caminho!';
+                document.getElementById('progress-description').textContent =
+                    CALL_TYPE === 'pedir_conta' ? 'Estamos preparando sua conta.' : 'Um atendente está se dirigindo à sua mesa agora.';
+                showState('state-waiting');
+                startPolling();
+            } else {
+                throw new Error('O chamado não foi aceito.');
+            }
+        } catch (e) {
+            console.error('Não foi possível enviar o chamado.', e);
+            alert('Não foi possível enviar seu chamado. Tente novamente.');
+            btn.disabled = false;
+            btn.textContent = originalText;
         }
-    } catch (e) {
-        console.error('Não foi possível enviar o chamado.', e);
-        alert('Não foi possível enviar seu chamado. Tente novamente.');
-        btn.disabled = false;
-        btn.textContent = '🔔 Chamar Atendente';
-    }
+    });
 });
 
 // ── Cancelar chamado ─────────────────────────────────────────────────────
@@ -176,14 +198,14 @@ function startPolling() {
                 throw new Error(`A solicitação falhou com o código ${res.status}.`);
             }
 
-            if (data.status === 'in_progress') {
+            if (data.status === 'em_atendimento') {
                 showState('state-progress');
                 stopPolling();
-            } else if (data.status === 'done' || data.status === 'closed') {
+            } else if (data.status === 'concluido' || data.status === 'closed') {
                 CALL_ID = null;
                 stopPolling();
                 showState('state-done');
-            } else if (data.status === 'cancelled') {
+            } else if (data.status === 'cancelado') {
                 CALL_ID = null;
                 stopPolling();
                 showState('state-idle');

@@ -3,21 +3,22 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
-use App\Models\RestaurantTable;
 use App\Models\QueueCall;
-use Illuminate\Http\Request;
+use App\Models\RestaurantTable;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class ClientCallController extends Controller
 {
     /** Exibe a página mobile do cliente ao escanear o QR Code */
     public function show(string $qrToken)
     {
-        $table = RestaurantTable::where('qr_token', $qrToken)
-                                ->where('is_active', true)
-                                ->with('company')
-                                ->firstOrFail();
+        $table = RestaurantTable::where('token_qr', $qrToken)
+            ->where('ativo', true)
+            ->with('company')
+            ->firstOrFail();
 
         $activeCall = $table->activeCall;
 
@@ -25,41 +26,49 @@ class ClientCallController extends Controller
     }
 
     /** Registra um novo chamado na fila */
-    public function store(string $qrToken): JsonResponse
+    public function store(Request $request, string $qrToken): JsonResponse
     {
-        $table = RestaurantTable::where('qr_token', $qrToken)
-                                ->where('is_active', true)
-                                ->firstOrFail();
+        $validated = $request->validate([
+            'tipo_servico' => ['required', Rule::in(array_keys(QueueCall::SERVICE_TYPES))],
+        ]);
+
+        $table = RestaurantTable::where('token_qr', $qrToken)
+            ->where('ativo', true)
+            ->firstOrFail();
 
         // Evita duplicata: mesa já está na fila ativa
         if ($table->isCurrentlyWaiting()) {
             $call = $table->activeCall;
+
             return response()->json([
-                'success'  => true,
-                'call_id'  => $call->id,
-                'position' => $call->position,
-                'message'  => 'Você já está na fila!',
+                'success' => true,
+                'call_id' => $call->id,
+                'position' => $call->posicao,
+                'tipo_servico' => $call->tipo_servico,
+                'message' => 'Você já está na fila!',
             ]);
         }
 
-        $call = DB::transaction(function () use ($table) {
-            $nextPosition = QueueCall::forCompany($table->company_id)
-                                     ->active()
-                                     ->max('position') + 1;
+        $call = DB::transaction(function () use ($table, $validated) {
+            $nextPosition = QueueCall::forCompany($table->empresa_id)
+                ->active()
+                ->max('posicao') + 1;
 
             return QueueCall::create([
-                'company_id' => $table->company_id,
-                'table_id'   => $table->id,
-                'position'   => $nextPosition,
-                'status'     => 'waiting',
-                'called_at'  => now(),
+                'empresa_id' => $table->empresa_id,
+                'mesa_id' => $table->id,
+                'posicao' => $nextPosition,
+                'tipo_servico' => $validated['tipo_servico'],
+                'situacao' => 'aguardando',
+                'chamado_em' => now(),
             ]);
         });
 
         return response()->json([
-            'success'  => true,
-            'call_id'  => $call->id,
-            'position' => $call->position,
+            'success' => true,
+            'call_id' => $call->id,
+            'position' => $call->posicao,
+            'tipo_servico' => $call->tipo_servico,
         ]);
     }
 
@@ -72,35 +81,35 @@ class ClientCallController extends Controller
             return response()->json(['status' => 'closed']);
         }
 
-        // Quantos chamados com status 'waiting' estão à frente na fila
-        $ahead = QueueCall::forCompany($call->company_id)
-                          ->waiting()
-                          ->where('position', '<', $call->position)
-                          ->count();
+        // Quantos chamados aguardando estão à frente na fila
+        $ahead = QueueCall::forCompany($call->empresa_id)
+            ->waiting()
+            ->where('posicao', '<', $call->posicao)
+            ->count();
 
         return response()->json([
-            'status'   => $call->status,
-            'position' => $call->position,
-            'ahead'    => $ahead,
+            'status' => $call->situacao,
+            'position' => $call->posicao,
+            'ahead' => $ahead,
         ]);
     }
 
     /** Cancela o chamado (botão de desistência do cliente) */
     public function cancel(string $qrToken): JsonResponse
     {
-        $table = RestaurantTable::where('qr_token', $qrToken)
-                                ->where('is_active', true)
-                                ->firstOrFail();
+        $table = RestaurantTable::where('token_qr', $qrToken)
+            ->where('ativo', true)
+            ->firstOrFail();
 
-        $call = QueueCall::where('table_id', $table->id)
-                         ->active()
-                         ->latest('called_at')
-                         ->first();
+        $call = QueueCall::where('mesa_id', $table->id)
+            ->active()
+            ->latest('chamado_em')
+            ->first();
 
         if ($call) {
             $call->update([
-                'status'    => 'cancelled',
-                'closed_at' => now(),
+                'situacao' => 'cancelado',
+                'encerrado_em' => now(),
             ]);
         }
 
