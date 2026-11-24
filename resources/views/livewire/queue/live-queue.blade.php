@@ -64,7 +64,7 @@
                                     >
                                 </td>
                                 <td>
-                                    <span class="badge-count">{{ $call->posicao }}</span>
+                                    <span class="badge-count">{{ $call->posicao_atual ?? '—' }}</span>
                                 </td>
                                 <td>
                                     <strong style="color:var(--text-primary);">

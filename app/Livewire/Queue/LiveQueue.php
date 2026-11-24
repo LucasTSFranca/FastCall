@@ -20,6 +20,18 @@ class LiveQueue extends Component
         }
 
         $calls = $query->get();
+        $waitingPositions = [];
+
+        foreach ($calls as $call) {
+            $companyId = $call->empresa_id;
+            $waitingPositions[$companyId] ??= 0;
+
+            $call->setAttribute(
+                'posicao_atual',
+                $call->isWaiting() ? ++$waitingPositions[$companyId] : null
+            );
+        }
+
         $overdueCalls = $calls->filter(
             fn (QueueCall $call) => $call->isWaiting()
                 && $call->chamado_em->lt(now()->subMinutes(5))

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="safira">
+<html lang="pt-BR" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -39,8 +39,8 @@
                 </div>
                 <div style="background: var(--bg-secondary); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
                     <div style="font-size: 1.5rem; margin-bottom: 0.25rem;">🎨</div>
-                    <strong style="display: block; font-size: 0.95rem; color: var(--text-primary);">Seis paletas</strong>
-                    <span style="font-size: 0.8rem; color: var(--text-secondary);">                                        Safira, Azul mineral, Coral e petróleo, Marinho e cobre, Bosque e Tríade.</span>
+                    <strong style="display: block; font-size: 0.95rem; color: var(--text-primary);">Três temas</strong>
+                    <span style="font-size: 0.8rem; color: var(--text-secondary);">Escolha entre os modos escuro, claro e personalizado.</span>
                 </div>
                 <div style="background: var(--bg-secondary); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
                     <div style="font-size: 1.5rem; margin-bottom: 0.25rem;">🛡️</div>

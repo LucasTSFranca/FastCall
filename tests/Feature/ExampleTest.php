@@ -16,7 +16,7 @@ class ExampleTest extends TestCase
 
         $response->assertOk()
             ->assertSee('Acesso por perfil')
-            ->assertSee('Safira', false)
+            ->assertSee('Três temas')
             ->assertSee('<svg', false);
     }
 }

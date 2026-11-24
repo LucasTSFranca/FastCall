@@ -38,7 +38,7 @@ class LiveQueueTest extends TestCase
         $company = Company::create([
             'nome' => 'Restaurante de teste',
             'identificador' => 'restaurante-de-teste',
-            'tema' => 'safira',
+            'tema' => 'dark',
             'ativo' => true,
         ]);
         $user = User::factory()->create([
@@ -73,7 +73,7 @@ class LiveQueueTest extends TestCase
         $company = Company::create([
             'nome' => 'Restaurante de teste',
             'identificador' => 'restaurante-de-teste',
-            'tema' => 'safira',
+            'tema' => 'dark',
             'ativo' => true,
         ]);
         $user = User::factory()->create([
@@ -111,5 +111,56 @@ class LiveQueueTest extends TestCase
             ->assertDontSee('Pedir a conta (há 4 minutos)');
 
         Carbon::setTestNow();
+    }
+
+    public function test_live_queue_displays_current_position_after_an_earlier_call_closes(): void
+    {
+        $company = Company::create([
+            'nome' => 'Restaurante de teste',
+            'identificador' => 'restaurante-de-teste',
+            'tema' => 'dark',
+            'ativo' => true,
+        ]);
+        $user = User::factory()->create([
+            'empresa_id' => $company->id,
+            'ativo' => true,
+        ]);
+        $closedTable = RestaurantTable::create([
+            'empresa_id' => $company->id,
+            'identificador' => '09',
+            'ativo' => true,
+        ]);
+        $waitingTable = RestaurantTable::create([
+            'empresa_id' => $company->id,
+            'identificador' => '10',
+            'ativo' => true,
+        ]);
+        QueueCall::create([
+            'empresa_id' => $company->id,
+            'mesa_id' => $closedTable->id,
+            'posicao' => 1,
+            'tipo_servico' => 'atendimento',
+            'situacao' => 'concluido',
+            'chamado_em' => now()->subMinutes(10),
+            'encerrado_em' => now(),
+        ]);
+        $waitingCall = QueueCall::create([
+            'empresa_id' => $company->id,
+            'mesa_id' => $waitingTable->id,
+            'posicao' => 2,
+            'tipo_servico' => 'atendimento',
+            'situacao' => 'aguardando',
+            'chamado_em' => now(),
+        ]);
+
+        $html = Livewire::actingAs($user)
+            ->test(LiveQueue::class)
+            ->assertSee('Mesa 10')
+            ->html();
+
+        $this->assertMatchesRegularExpression(
+            '/<tr class="queue-row[^"]*" data-call-id="'.$waitingCall->id.'".*?<span class="badge-count">1<\/span>/s',
+            $html
+        );
     }
 }

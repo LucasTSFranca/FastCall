@@ -39,7 +39,7 @@ class LocalizedDatabaseSchemaTest extends TestCase
         $empresa = Company::create([
             'nome' => 'Restaurante de teste',
             'identificador' => 'restaurante-de-teste',
-            'tema' => 'safira',
+            'tema' => 'dark',
             'ativo' => true,
         ]);
         $usuario = User::factory()->create([

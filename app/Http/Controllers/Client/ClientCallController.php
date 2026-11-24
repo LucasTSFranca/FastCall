@@ -21,8 +21,9 @@ class ClientCallController extends Controller
             ->firstOrFail();
 
         $activeCall = $table->activeCall;
+        $activePosition = $activeCall ? $this->currentPosition($activeCall) : null;
 
-        return view('client.call', compact('table', 'activeCall'));
+        return view('client.call', compact('table', 'activeCall', 'activePosition'));
     }
 
     /** Registra um novo chamado na fila */
@@ -43,7 +44,7 @@ class ClientCallController extends Controller
             return response()->json([
                 'success' => true,
                 'call_id' => $call->id,
-                'position' => $call->posicao,
+                'position' => $this->currentPosition($call),
                 'tipo_servico' => $call->tipo_servico,
                 'message' => 'Você já está na fila!',
             ]);
@@ -67,7 +68,7 @@ class ClientCallController extends Controller
         return response()->json([
             'success' => true,
             'call_id' => $call->id,
-            'position' => $call->posicao,
+            'position' => $this->currentPosition($call),
             'tipo_servico' => $call->tipo_servico,
         ]);
     }
@@ -81,15 +82,13 @@ class ClientCallController extends Controller
             return response()->json(['status' => 'closed']);
         }
 
-        // Quantos chamados aguardando estão à frente na fila
-        $ahead = QueueCall::forCompany($call->empresa_id)
-            ->waiting()
-            ->where('posicao', '<', $call->posicao)
-            ->count();
+        $ahead = $call->isWaiting()
+            ? $this->waitingCallsAhead($call)
+            : 0;
 
         return response()->json([
             'status' => $call->situacao,
-            'position' => $call->posicao,
+            'position' => $call->isWaiting() ? $ahead + 1 : null,
             'ahead' => $ahead,
         ]);
     }
@@ -114,5 +113,20 @@ class ClientCallController extends Controller
         }
 
         return response()->json(['success' => true]);
+    }
+
+    private function currentPosition(QueueCall $call): ?int
+    {
+        return $call->isWaiting()
+            ? $this->waitingCallsAhead($call) + 1
+            : null;
+    }
+
+    private function waitingCallsAhead(QueueCall $call): int
+    {
+        return QueueCall::forCompany($call->empresa_id)
+            ->waiting()
+            ->where('posicao', '<', $call->posicao)
+            ->count();
     }
 }

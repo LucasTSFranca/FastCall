@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder
             'nome' => 'Restaurante FastCall Demo',
             'identificador' => 'fastcall-demo',
             'cnpj' => '00.000.000/0001-00',
-            'tema' => 'safira',
+            'tema' => 'dark',
             'ativo' => true,
         ]);
 
@@ -29,7 +29,7 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('admin123'),
             'perfil' => 'administrador',
             'ativo' => true,
-            'tema_preferido' => 'safira',
+            'tema_preferido' => 'dark',
         ]);
 
         // ── Gerente da empresa de demonstração ───────────────────────────
@@ -40,7 +40,7 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('password'),
             'perfil' => 'gerente',
             'ativo' => true,
-            'tema_preferido' => 'safira',
+            'tema_preferido' => 'dark',
         ]);
 
         // ── Atendentes de demonstração ───────────────────────────────────
@@ -51,7 +51,7 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('password'),
             'perfil' => 'atendente',
             'ativo' => true,
-            'tema_preferido' => 'safira',
+            'tema_preferido' => 'dark',
         ]);
 
         User::create([
@@ -61,7 +61,7 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('password'),
             'perfil' => 'atendente',
             'ativo' => true,
-            'tema_preferido' => 'marinho_cobre',
+            'tema_preferido' => 'personalizado',
         ]);
 
         // ── Mesas de demonstração ────────────────────────────────────────

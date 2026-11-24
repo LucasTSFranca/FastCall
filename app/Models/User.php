@@ -22,6 +22,7 @@ class User extends Authenticatable
         'perfil',
         'ativo',
         'tema_preferido',
+        'cores_tema_personalizado',
     ];
 
     protected $hidden = [
@@ -35,6 +36,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'ativo' => 'boolean',
+            'cores_tema_personalizado' => 'array',
         ];
     }
 
@@ -78,6 +80,6 @@ class User extends Authenticatable
     {
         return $this->tema_preferido
             ?? $this->company?->tema
-            ?? 'safira';
+            ?? 'dark';
     }
 }

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="{{ $table->company->tema ?? 'safira' }}">
+<html lang="pt-BR" data-theme="{{ $table->company->tema ?? 'dark' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="theme-color" content="{{ config('themes')[$table->company->tema ?? 'safira']['swatch'] ?? '#315b83' }}">
+    <meta name="theme-color" content="{{ config('themes')[$table->company->tema ?? 'dark']['swatch'] ?? '#315b83' }}">
     <title>FastCall — {{ $table->display_name }}</title>
     @vite(['resources/css/app.css'])
 </head>
@@ -48,7 +48,7 @@
             </p>
             <p class="queue-label">Sua posição na fila</p>
             <div class="queue-position" id="queue-position">
-                {{ $activeCall?->posicao ?? '—' }}
+                {{ $activePosition ?? '—' }}
             </div>
             <p class="queue-subtitle" id="queue-subtitle" aria-live="polite">
                 Aguarde, um atendente virá até você em breve.

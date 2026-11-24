@@ -23,8 +23,8 @@ return new class extends Migration
                 ->default(true)
                 ->after('perfil');
 
-            $table->enum('tema_preferido', ['safira', 'azul_mineral', 'coral_petroleo', 'marinho_cobre', 'bosque', 'triade'])
-                ->default('safira')
+            $table->enum('tema_preferido', ['dark', 'light', 'personalizado'])
+                ->default('dark')
                 ->after('ativo');
 
             $table->index(['empresa_id', 'perfil']);

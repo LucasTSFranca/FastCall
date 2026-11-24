@@ -1,5 +1,18 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="{{ auth()->user()?->active_theme ?? 'safira' }}" data-theme-update-url="{{ route('theme.update') }}">
+@php
+    $savedCustomThemeColors = auth()->user()?->cores_tema_personalizado ?? [];
+    $customThemeColors = array_merge(
+        config('themes.personalizado.colors'),
+        [
+            'background' => $savedCustomThemeColors['background'] ?? config('themes.personalizado.colors.background'),
+            'buttons' => $savedCustomThemeColors['buttons'] ?? $savedCustomThemeColors['primary'] ?? config('themes.personalizado.colors.buttons'),
+            'text' => $savedCustomThemeColors['text'] ?? config('themes.personalizado.colors.text'),
+        ],
+    );
+    $activeTheme = auth()->user()?->active_theme ?? 'dark';
+@endphp
+<html lang="pt-BR" data-theme="{{ $activeTheme }}" data-theme-update-url="{{ route('theme.update') }}"
+      style="--custom-background: {{ $customThemeColors['background'] }}; --custom-buttons: {{ $customThemeColors['buttons'] }}; --custom-text: {{ $customThemeColors['text'] }}; --custom-button-label: {{ \App\Support\ThemeColors::contrastText($customThemeColors['buttons']) }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -65,7 +78,7 @@
                 <button
                     class="theme-dot theme-{{ $themeKey }} {{ auth()->user()->active_theme === $themeKey ? 'active' : '' }}"
                     data-theme="{{ $themeKey }}"
-                    style="--theme-swatch: {{ $theme['swatch'] }}; --theme-secondary-swatch: {{ $theme['secondary'] }}"
+                    style="--theme-swatch: {{ $themeKey === 'personalizado' ? $customThemeColors['buttons'] : $theme['swatch'] }}; --theme-secondary-swatch: {{ $themeKey === 'personalizado' ? $customThemeColors['background'] : $theme['secondary'] }}"
                     title="{{ $theme['name'] }} — {{ $theme['harmony'] }}"
                     aria-label="Usar tema {{ $theme['name'] }}, harmonia {{ $theme['harmony'] }}"
                     aria-pressed="{{ auth()->user()->active_theme === $themeKey ? 'true' : 'false' }}"
@@ -73,6 +86,29 @@
                 ></button>
             @endforeach
             </div>
+            <details class="theme-customizer" id="theme-customizer" {{ $activeTheme !== 'personalizado' ? 'hidden' : '' }}>
+                <summary>Personalizar cores</summary>
+                <form id="custom-theme-form" class="theme-customizer-panel">
+                    <p>As cores personalizadas são opcionais e salvas somente para sua conta.</p>
+                    @foreach([
+                        'background' => 'Fundo',
+                        'buttons' => 'Botões',
+                        'text' => 'Textos',
+                    ] as $colorKey => $colorLabel)
+                        <label class="theme-color-field" for="theme-color-{{ $colorKey }}">
+                            <span>{{ $colorLabel }}</span>
+                            <input
+                                id="theme-color-{{ $colorKey }}"
+                                name="cores[{{ $colorKey }}]"
+                                type="color"
+                                value="{{ $customThemeColors[$colorKey] }}"
+                                data-custom-color="{{ $colorKey }}"
+                            >
+                        </label>
+                    @endforeach
+                    <button class="btn btn-accent btn-sm" type="submit">Salvar cores</button>
+                </form>
+            </details>
         </div>
         <span id="theme-status" class="theme-status" role="status" aria-live="polite"></span>
 

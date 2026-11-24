@@ -101,7 +101,7 @@ class AttendanceReportTest extends TestCase
         $company = Company::create([
             'nome' => $companyName,
             'identificador' => str($companyName)->slug()->toString(),
-            'tema' => 'safira',
+            'tema' => 'dark',
             'ativo' => true,
         ]);
         $attendant = User::factory()->create([

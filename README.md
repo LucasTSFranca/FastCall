@@ -9,10 +9,11 @@ Sistema web para organizar solicitações de atendimento em restaurantes e outro
 - Página do cliente acessível por QR Code, adaptada para dispositivos móveis.
 - Solicitações de serviço: **Chamar atendente** e **Pedir a conta**.
 - Fila de chamados atualizada automaticamente a cada cinco segundos.
+- Posição recalculada conforme chamados anteriores são atendidos, encerrados ou cancelados.
 - Alerta visual na fila quando uma solicitação continua aguardando por mais de cinco minutos.
 - Ações para assumir, encerrar e cancelar chamados.
 - Relatórios de quantidade por empresa, responsável, serviço e situação, com exportação CSV.
-- Temas de cores e interface em Português Brasileiro.
+- Três temas visuais: escuro, claro e personalizado. No tema personalizado, cada usuário pode opcionalmente escolher as cores de fundo, botões e textos. As alterações só são aplicadas após clicar em **Salvar cores**, e a combinação de textos é validada para manter o contraste. A preferência é individual e armazenada no perfil do usuário.
 
 > O pedido de conta é registrado como um tipo de atendimento. O sistema não calcula valores nem processa pagamentos.
 

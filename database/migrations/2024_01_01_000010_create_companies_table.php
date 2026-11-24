@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('identificador')->unique();
             $table->string('caminho_logo')->nullable();
             $table->string('cnpj', 18)->nullable()->unique();
-            $table->enum('tema', ['safira', 'azul_mineral', 'coral_petroleo', 'marinho_cobre', 'bosque', 'triade'])->default('safira');
+            $table->enum('tema', ['dark', 'light', 'personalizado'])->default('dark');
             $table->boolean('ativo')->default(true);
             $table->timestamps();
 

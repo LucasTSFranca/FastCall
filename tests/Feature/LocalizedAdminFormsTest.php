@@ -27,7 +27,7 @@ class LocalizedAdminFormsTest extends TestCase
         $this->post(route('admin.companies.store'), [
             'nome' => 'Restaurante Central',
             'cnpj' => '12.345.678/0001-90',
-            'tema' => 'bosque',
+            'tema' => 'personalizado',
             'ativo' => '1',
         ])->assertRedirect(route('admin.companies.index'));
 
@@ -60,7 +60,7 @@ class LocalizedAdminFormsTest extends TestCase
         $company = Company::create([
             'nome' => 'Restaurante da Praça',
             'identificador' => 'restaurante-da-praca',
-            'tema' => 'safira',
+            'tema' => 'dark',
             'ativo' => true,
         ]);
         $manager = User::factory()->create([
@@ -95,13 +95,13 @@ class LocalizedAdminFormsTest extends TestCase
         $company = Company::create([
             'nome' => 'Empresa do gerente',
             'identificador' => 'empresa-do-gerente',
-            'tema' => 'safira',
+            'tema' => 'dark',
             'ativo' => true,
         ]);
         $otherCompany = Company::create([
             'nome' => 'Outra empresa',
             'identificador' => 'outra-empresa',
-            'tema' => 'safira',
+            'tema' => 'dark',
             'ativo' => true,
         ]);
         $manager = User::factory()->create([
