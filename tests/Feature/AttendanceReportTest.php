@@ -62,6 +62,38 @@ class AttendanceReportTest extends TestCase
             ->assertDontSee('Outra Empresa');
     }
 
+    public function test_only_managers_and_administrators_can_view_or_export_reports(): void
+    {
+        $attendant = User::factory()->create([
+            'perfil' => 'atendente',
+            'ativo' => true,
+        ]);
+
+        $this->actingAs($attendant)
+            ->get(route('reports.index'))
+            ->assertForbidden();
+
+        $this->get(route('reports.export'))
+            ->assertForbidden();
+    }
+
+    public function test_administrator_can_view_all_companies_without_a_company_filter(): void
+    {
+        $this->createAttendedService();
+        $this->createAttendedService('Outra Empresa', 'Outro Atendente');
+        $admin = User::factory()->create([
+            'perfil' => 'administrador',
+            'ativo' => true,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('reports.index'))
+            ->assertOk()
+            ->assertSee('Restaurante Relatório')
+            ->assertSee('Outra Empresa')
+            ->assertSee('>2<', false);
+    }
+
     private function createAttendedService(
         string $companyName = 'Restaurante Relatório',
         string $attendantName = 'Atendente Relatório'

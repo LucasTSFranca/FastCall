@@ -40,11 +40,16 @@ Route::middleware(['auth', 'ensure.active'])->group(function () {
     Route::post('/theme', [UserPreferenceController::class, 'updateTheme'])
         ->name('theme.update');
 
-    Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
-    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::middleware('role:gerente,administrador')->group(function () {
+        Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
+        Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    });
 
     // ── Gerenciamento de Mesas (Gerente e Admin) ─────────────────────────────
     Route::middleware('role:gerente,administrador')->group(function () {
+        Route::get('/funcionarios/novo', [UserController::class, 'create'])->name('employees.create');
+        Route::post('/funcionarios', [UserController::class, 'store'])->name('employees.store');
+
         Route::get('/tables', [TableController::class, 'index'])->name('tables.index');
         Route::get('/tables/create', [TableController::class, 'create'])->name('tables.create');
         Route::post('/tables', [TableController::class, 'store'])->name('tables.store');

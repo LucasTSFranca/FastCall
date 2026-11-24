@@ -18,34 +18,62 @@ class UserController extends Controller
 
     public function create()
     {
-        $companies = Company::where('ativo', true)->orderBy('nome')->get();
+        $isAdmin = auth()->user()->isAdmin();
+        abort_if(! $isAdmin && (! auth()->user()->isManager() || ! auth()->user()->empresa_id), 403);
 
-        return view('admin.users.form', ['user' => null, 'companies' => $companies]);
+        $companies = $isAdmin
+            ? Company::where('ativo', true)->orderBy('nome')->get()
+            : collect();
+
+        return view('admin.users.form', [
+            'user' => null,
+            'companies' => $companies,
+            'isAdmin' => $isAdmin,
+            'company' => $isAdmin ? null : auth()->user()->company,
+        ]);
     }
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'empresa_id' => 'nullable|exists:empresas,id',
+        $isAdmin = auth()->user()->isAdmin();
+        abort_if(! $isAdmin && (! auth()->user()->isManager() || ! auth()->user()->empresa_id), 403);
+
+        $rules = [
             'nome' => 'required|string|max:150',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
-            'perfil' => 'required|in:administrador,gerente,atendente',
             'ativo' => 'boolean',
-        ]);
+        ];
+        $rules['perfil'] = $isAdmin
+            ? 'required|in:administrador,gerente,atendente'
+            : 'required|in:atendente';
+
+        if ($isAdmin) {
+            $rules['empresa_id'] = 'nullable|exists:empresas,id';
+        }
+
+        $data = $request->validate($rules);
+        $data['empresa_id'] = $isAdmin ? ($data['empresa_id'] ?? null) : auth()->user()->empresa_id;
 
         $data['ativo'] = $request->boolean('ativo');
 
         User::create($data);
 
-        return redirect()->route('admin.users.index')->with('success', '✅ Usuário criado!');
+        $destination = $isAdmin ? 'admin.users.index' : 'queue.index';
+
+        return redirect()->route($destination)->with('success', '✅ Funcionário criado!');
     }
 
     public function edit(User $user)
     {
         $companies = Company::where('ativo', true)->orderBy('nome')->get();
 
-        return view('admin.users.form', compact('user', 'companies'));
+        return view('admin.users.form', [
+            'user' => $user,
+            'companies' => $companies,
+            'isAdmin' => true,
+            'company' => null,
+        ]);
     }
 
     public function update(Request $request, User $user)

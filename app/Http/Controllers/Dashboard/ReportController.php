@@ -80,11 +80,17 @@ class ReportController extends Controller
 
     private function validatedFilters(Request $request): array
     {
-        return $request->validate([
+        $filters = $request->validate([
             'empresa_id' => ['nullable', 'integer', Rule::exists('empresas', 'id')],
             'atendente_id' => ['nullable', 'integer', Rule::exists('users', 'id')],
             'tipo_servico' => ['nullable', Rule::in(array_keys(QueueCall::SERVICE_TYPES))],
         ]);
+
+        if (! auth()->user()->isAdmin()) {
+            unset($filters['empresa_id']);
+        }
+
+        return $filters;
     }
 
     private function filteredCalls(array $filters): Builder

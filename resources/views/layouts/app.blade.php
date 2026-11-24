@@ -26,10 +26,12 @@
                class="nav-link {{ request()->routeIs('queue.*') ? 'active' : '' }}">
                 📋 Fila
             </a>
-            <a href="{{ route('reports.index') }}"
-               class="nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">
-                📊 Relatórios
-            </a>
+            @if(auth()->user()->isAdmin() || auth()->user()->isManager())
+                <a href="{{ route('reports.index') }}"
+                   class="nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">
+                    📊 Relatórios
+                </a>
+            @endif
             @if(auth()->user()->canManageTables())
             <a href="{{ route('tables.index') }}"
                class="nav-link {{ request()->routeIs('tables.*') ? 'active' : '' }}">
@@ -44,6 +46,11 @@
             <a href="{{ route('admin.users.index') }}"
                class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
                 👥 Usuários
+            </a>
+            @elseif(auth()->user()->isManager())
+            <a href="{{ route('employees.create') }}"
+               class="nav-link {{ request()->routeIs('employees.*') ? 'active' : '' }}">
+                👥 Adicionar funcionário
             </a>
             @endif
         </div>

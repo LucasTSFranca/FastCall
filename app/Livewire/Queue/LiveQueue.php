@@ -19,8 +19,15 @@ class LiveQueue extends Component
             $query->forCompany($user->empresa_id);
         }
 
+        $calls = $query->get();
+        $overdueCalls = $calls->filter(
+            fn (QueueCall $call) => $call->isWaiting()
+                && $call->chamado_em->lt(now()->subMinutes(5))
+        );
+
         return view('livewire.queue.live-queue', [
-            'calls' => $query->get(),
+            'calls' => $calls,
+            'overdueCalls' => $overdueCalls,
         ]);
     }
 }

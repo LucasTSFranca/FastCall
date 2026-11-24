@@ -8,6 +8,7 @@ use App\Models\QueueCall;
 use App\Models\RestaurantTable;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -63,5 +64,52 @@ class LiveQueueTest extends TestCase
             ->assertSee('Mesa 07')
             ->assertSee('Pedir a conta')
             ->assertSee('Aguardando');
+    }
+
+    public function test_queue_notifies_staff_when_a_waiting_call_exceeds_five_minutes(): void
+    {
+        Carbon::setTestNow(now());
+
+        $company = Company::create([
+            'nome' => 'Restaurante de teste',
+            'identificador' => 'restaurante-de-teste',
+            'tema' => 'safira',
+            'ativo' => true,
+        ]);
+        $user = User::factory()->create([
+            'empresa_id' => $company->id,
+            'perfil' => 'atendente',
+            'ativo' => true,
+        ]);
+        $table = RestaurantTable::create([
+            'empresa_id' => $company->id,
+            'identificador' => '08',
+            'ativo' => true,
+        ]);
+        QueueCall::create([
+            'empresa_id' => $company->id,
+            'mesa_id' => $table->id,
+            'posicao' => 1,
+            'tipo_servico' => 'atendimento',
+            'situacao' => 'aguardando',
+            'chamado_em' => now()->subMinutes(6),
+        ]);
+        QueueCall::create([
+            'empresa_id' => $company->id,
+            'mesa_id' => $table->id,
+            'posicao' => 2,
+            'tipo_servico' => 'pedir_conta',
+            'situacao' => 'aguardando',
+            'chamado_em' => now()->subMinutes(4),
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(LiveQueue::class)
+            ->assertSee('Há uma mesa aguardando há mais de 5 minutos.')
+            ->assertSee('Mesa 08')
+            ->assertSee('Chamar atendente')
+            ->assertDontSee('Pedir a conta (há 4 minutos)');
+
+        Carbon::setTestNow();
     }
 }

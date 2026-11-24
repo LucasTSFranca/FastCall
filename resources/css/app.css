@@ -603,6 +603,21 @@ body {
 .alert-danger  { background: rgba(239,68,68,0.15); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
 .alert-warning { background: rgba(245,158,11,0.15); color: var(--warning); border: 1px solid rgba(245,158,11,0.3); }
 
+.overdue-notification {
+  justify-content: flex-start;
+  border-color: var(--warning);
+}
+
+.overdue-notification ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+  font-weight: 400;
+}
+
+.queue-row-overdue {
+  background: rgba(245,158,11,0.08);
+}
+
 /* ── Forms ───────────────────────────────────────────────────────────────── */
 .form-group {
   display: flex;

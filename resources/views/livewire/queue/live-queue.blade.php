@@ -4,6 +4,25 @@
         <span class="badge-count" id="queue-count">{{ $calls->count() }}</span>
     </div>
 
+    @if($overdueCalls->isNotEmpty())
+        <div class="alert alert-warning overdue-notification" role="status" aria-live="polite">
+            <div>
+                <strong>
+                    ⚠️ {{ $overdueCalls->count() === 1 ? 'Há uma mesa aguardando há mais de 5 minutos.' : "Há {$overdueCalls->count()} mesas aguardando há mais de 5 minutos." }}
+                </strong>
+                <ul>
+                    @foreach($overdueCalls as $overdueCall)
+                        <li>
+                            {{ $overdueCall->table->display_name }} —
+                            {{ \App\Models\QueueCall::SERVICE_TYPES[$overdueCall->tipo_servico] ?? $overdueCall->tipo_servico }}
+                            ({{ $overdueCall->chamado_em->diffForHumans() }})
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+    @endif
+
     <div class="card">
         <div class="card-body" style="padding:0;">
             @if($calls->isEmpty())
@@ -34,7 +53,7 @@
                     </thead>
                     <tbody id="queue-tbody">
                         @foreach($calls as $call)
-                            <tr class="queue-row" data-call-id="{{ $call->id }}" data-status="{{ $call->situacao }}" wire:key="queue-call-{{ $call->id }}">
+                            <tr class="queue-row {{ $overdueCalls->contains('id', $call->id) ? 'queue-row-overdue' : '' }}" data-call-id="{{ $call->id }}" data-status="{{ $call->situacao }}" wire:key="queue-call-{{ $call->id }}">
                                 <td>
                                     <input
                                         type="checkbox"

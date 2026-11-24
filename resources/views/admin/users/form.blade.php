@@ -5,31 +5,38 @@
 <div style="max-width:560px; margin: 0 auto;">
     <div class="page-header" style="justify-content:space-between; margin-bottom:1.5rem;">
         <h1 class="page-title">{{ isset($user) ? '✏️ Editar Usuário' : '➕ Novo Usuário' }}</h1>
-        <a href="{{ route('admin.users.index') }}" class="btn btn-ghost">← Voltar</a>
+        <a href="{{ $isAdmin ? route('admin.users.index') : route('queue.index') }}" class="btn btn-ghost">← Voltar</a>
     </div>
 
     <div class="card">
         <div class="card-body">
             <form
                 method="POST"
-                action="{{ isset($user) ? route('admin.users.update', $user) : route('admin.users.store') }}"
+                action="{{ isset($user) ? route('admin.users.update', $user) : route($isAdmin ? 'admin.users.store' : 'employees.store') }}"
             >
                 @csrf
                 @if(isset($user)) @method('PUT') @endif
 
-                <div class="form-group">
-                    <label class="form-label" for="empresa_id">Empresa vinculada</label>
-                    <select id="empresa_id" name="empresa_id" class="form-select">
-                        <option value="">— Nenhuma (administrador global) —</option>
-                        @foreach($companies as $company)
-                            <option value="{{ $company->id }}"
-                                {{ old('empresa_id', $user?->empresa_id) == $company->id ? 'selected' : '' }}>
-                                {{ $company->nome }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('empresa_id') <span class="form-error">{{ $message }}</span> @enderror
-                </div>
+                @if($isAdmin)
+                    <div class="form-group">
+                        <label class="form-label" for="empresa_id">Empresa vinculada</label>
+                        <select id="empresa_id" name="empresa_id" class="form-select">
+                            <option value="">— Nenhuma (administrador global) —</option>
+                            @foreach($companies as $company)
+                                <option value="{{ $company->id }}"
+                                    {{ old('empresa_id', $user?->empresa_id) == $company->id ? 'selected' : '' }}>
+                                    {{ $company->nome }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('empresa_id') <span class="form-error">{{ $message }}</span> @enderror
+                    </div>
+                @else
+                    <div class="form-group">
+                        <label class="form-label" for="empresa">Empresa</label>
+                        <input id="empresa" class="form-input" value="{{ $company?->nome }}" disabled>
+                    </div>
+                @endif
 
                 <div class="form-group">
                     <label class="form-label" for="nome">Nome *</label>
@@ -62,15 +69,20 @@
                 </div>
                 @endif
 
-                <div class="form-group">
-                    <label class="form-label" for="perfil">Perfil *</label>
-                    <select id="perfil" name="perfil" class="form-select" required>
-                        <option value="atendente" {{ old('perfil', $user?->perfil) === 'atendente' ? 'selected' : '' }}>Atendente</option>
-                        <option value="gerente" {{ old('perfil', $user?->perfil) === 'gerente' ? 'selected' : '' }}>Gerente</option>
-                        <option value="administrador" {{ old('perfil', $user?->perfil) === 'administrador' ? 'selected' : '' }}>Administrador</option>
-                    </select>
-                    @error('perfil') <span class="form-error">{{ $message }}</span> @enderror
-                </div>
+                @if($isAdmin)
+                    <div class="form-group">
+                        <label class="form-label" for="perfil">Perfil *</label>
+                        <select id="perfil" name="perfil" class="form-select" required>
+                            <option value="atendente" {{ old('perfil', $user?->perfil) === 'atendente' ? 'selected' : '' }}>Atendente</option>
+                            <option value="gerente" {{ old('perfil', $user?->perfil) === 'gerente' ? 'selected' : '' }}>Gerente</option>
+                            <option value="administrador" {{ old('perfil', $user?->perfil) === 'administrador' ? 'selected' : '' }}>Administrador</option>
+                        </select>
+                        @error('perfil') <span class="form-error">{{ $message }}</span> @enderror
+                    </div>
+                @else
+                    <input type="hidden" name="perfil" value="atendente">
+                    <p class="form-label">Perfil: Atendente</p>
+                @endif
 
                 <div class="form-group">
                     <label class="form-toggle">
@@ -91,7 +103,7 @@
                 </div>
 
                 <div style="display:flex;gap:0.75rem;justify-content:flex-end;margin-top:1.5rem;">
-                    <a href="{{ route('admin.users.index') }}" class="btn btn-ghost">Cancelar</a>
+                    <a href="{{ $isAdmin ? route('admin.users.index') : route('queue.index') }}" class="btn btn-ghost">Cancelar</a>
                     <button type="submit" class="btn btn-accent">
                         {{ isset($user) ? 'Salvar Alterações' : 'Criar Usuário' }}
                     </button>
