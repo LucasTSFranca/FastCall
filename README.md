@@ -160,6 +160,21 @@ npm run build
 
 Também é possível usar `composer run dev`, que inicia vários processos de desenvolvimento em paralelo (servidor, Vite, worker de fila e logs).
 
+## Docker no Windows
+
+Na raiz de `FastCall`, execute:
+
+```powershell
+docker compose build --no-cache
+docker compose up -d
+docker compose exec app composer install
+docker compose exec app php artisan key:generate
+docker compose exec app php artisan migrate:fresh --seed
+docker compose exec app chown -R www-data:www-data storage bootstrap/cache
+```
+
+A aplicação ficará disponível em `http://localhost:8000`. O Docker usa PHP-FPM 8.3, Nginx, MySQL 8 e Node.js 22. O banco já é configurado pelo `docker-compose.yml` com usuário `root` e senha vazia; não use `127.0.0.1` no `DB_HOST` dentro dos contêineres, pois o endereço do banco é `mysql`. `migrate:fresh` apaga todas as tabelas do banco selecionado antes de recriá-las.
+
 ## Banco de dados: migrations e seeders
 
 As migrations da aplicação criam o esquema e as tabelas de suporte do Laravel. As principais tabelas do domínio são:
