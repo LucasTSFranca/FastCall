@@ -160,20 +160,21 @@ npm run build
 
 Também é possível usar `composer run dev`, que inicia vários processos de desenvolvimento em paralelo (servidor, Vite, worker de fila e logs).
 
-## Docker no Windows
+## Docker (Windows, macOS e Linux)
 
-Na raiz de `FastCall`, execute:
+Instale e inicie o Docker Desktop (Windows/macOS) ou Docker Engine com o plugin Docker Compose (Linux). Na raiz de `FastCall`, execute:
 
-```powershell
-docker compose build --no-cache
-docker compose up -d
+```bash
+docker compose up -d --build
+docker compose exec app sh -c "test -f .env || cp .env.example .env"
 docker compose exec app composer install
 docker compose exec app php artisan key:generate
-docker compose exec app php artisan migrate:fresh --seed
-docker compose exec app chown -R www-data:www-data storage bootstrap/cache
+docker compose exec app php artisan migrate --seed
 ```
 
-A aplicação ficará disponível em `http://localhost:8000`. O Docker usa PHP-FPM 8.3, Nginx, MySQL 8 e Node.js 22. O banco já é configurado pelo `docker-compose.yml` com usuário `root` e senha vazia; não use `127.0.0.1` no `DB_HOST` dentro dos contêineres, pois o endereço do banco é `mysql`. `migrate:fresh` apaga todas as tabelas do banco selecionado antes de recriá-las.
+A aplicação ficará disponível em `http://localhost:8000`. O Docker usa PHP-FPM 8.3, Nginx, MySQL 8 e Node.js 22. O Compose permite alterar as portas publicadas com as variáveis `APP_PORT` (8000), `DB_PORT` (3306) e `VITE_PORT` (5173), caso as portas padrão já estejam ocupadas. O Laravel conecta ao banco pelo host interno `mysql`, independentemente da porta publicada na máquina. O Vite publica os arquivos para o navegador em `localhost` e usa polling para detectar alterações nos arquivos compartilhados com o contêiner. `migrate --seed` aplica migrations pendentes e insere os dados de demonstração sem apagar tabelas existentes; para reiniciar dados, faça isso conscientemente com `migrate:fresh --seed`, que apaga todas as tabelas do banco selecionado.
+
+Para parar os serviços sem apagar o banco, use `docker compose down`. Evite `docker compose down -v`, pois isso também remove os dados persistidos do MySQL.
 
 ## Banco de dados: migrations e seeders
 
