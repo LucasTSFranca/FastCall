@@ -13,10 +13,21 @@ class DashboardController extends Controller
         $user = auth()->user();
         $companyId = $user->empresa_id;
 
+        $callStats = QueueCall::query()
+            ->when($companyId, fn ($query) => $query->forCompany($companyId))
+            ->selectRaw(
+                'SUM(CASE WHEN situacao = ? THEN 1 ELSE 0 END) AS waiting_count,
+                SUM(CASE WHEN situacao = ? THEN 1 ELSE 0 END) AS in_progress_count,
+                SUM(CASE WHEN DATE(chamado_em) = ? THEN 1 ELSE 0 END) AS total_today',
+                ['aguardando', 'em_atendimento', today()->toDateString()]
+            )
+            ->first();
+
+        $waitingCount = (int) $callStats->waiting_count;
+        $inProgressCount = (int) $callStats->in_progress_count;
+        $totalToday = (int) $callStats->total_today;
+
         if ($companyId) {
-            $waitingCount = QueueCall::forCompany($companyId)->waiting()->count();
-            $inProgressCount = QueueCall::forCompany($companyId)->where('situacao', 'em_atendimento')->count();
-            $totalToday = QueueCall::forCompany($companyId)->whereDate('chamado_em', today())->count();
             $tablesCount = RestaurantTable::where('empresa_id', $companyId)->where('ativo', true)->count();
 
             $recentCalls = QueueCall::forCompany($companyId)
@@ -26,9 +37,6 @@ class DashboardController extends Controller
                 ->take(10)
                 ->get();
         } else {
-            $waitingCount = QueueCall::waiting()->count();
-            $inProgressCount = QueueCall::where('situacao', 'em_atendimento')->count();
-            $totalToday = QueueCall::whereDate('chamado_em', today())->count();
             $tablesCount = RestaurantTable::where('ativo', true)->count();
 
             $recentCalls = QueueCall::active()

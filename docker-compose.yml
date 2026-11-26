@@ -13,7 +13,7 @@ services:
       DB_DATABASE: laravel
       DB_USERNAME: root
       DB_PASSWORD: ""
-      APP_URL: http://localhost:8000
+      APP_URL: http://localhost:${APP_PORT:-8000}
     volumes:
       - ./:/var/www
     networks:
@@ -63,6 +63,7 @@ services:
     environment:
       CHOKIDAR_USEPOLLING: "true"
       VITE_PORT: ${VITE_PORT:-5173}
+      APP_URL: http://localhost:${APP_PORT:-8000}
     command: sh -c "npm ci && npm run dev"
     networks:
       - laravel

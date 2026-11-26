@@ -61,13 +61,14 @@
                     @error('password') <span class="form-error">{{ $message }}</span> @enderror
                 </div>
 
-                @if(isset($user))
                 <div class="form-group">
-                    <label class="form-label" for="password_confirmation">Confirmar Senha</label>
+                    <label class="form-label" for="password_confirmation">
+                        Confirmar Senha {{ isset($user) ? '(se alterar)' : '*' }}
+                    </label>
                     <input id="password_confirmation" type="password" name="password_confirmation"
-                           class="form-input" placeholder="Repita a senha">
+                           class="form-input" placeholder="Repita a senha"
+                           {{ isset($user) ? '' : 'required' }}>
                 </div>
-                @endif
 
                 @if($isAdmin)
                     <div class="form-group">
